@@ -1,0 +1,313 @@
+2023 0302
+ 加入ion_t 误差固化以加速LddT扫描
+
+2023 05~06 尝试切片 dA0T 方法
+结果： 无法得到准确的L ddT , 斜率很小，比起常数L DDT 对于 gtC没有明显改善
+得到的gtC 曲线和 Z>=7上支符合
+
+
+2023 0626 
+总结阶段性结果 给出当前的质量结果--v1等权重和v2带误差棒权重
+由于chi_n 太大， 加入系统误差 ---- Show_Mass_Result()
+* 函数里面打开了TCanvas， 如果重复调用函数，同名的canvas会相互覆盖吗？---会 只有一个图
+Warning in <TCanvas::Constructor>: Deleting canvas with same name: c1_AMEcompare_T_shadow
+
+2023 0627
+在Show_Mass_Result() 里面加入加系统误差的功能，全局 gr_errsys_chin ，每调用一次Showmass() 就往gr_errsys_chin里面存一个点
+函数内部 Only_draw_mass_v2 控制 系统误差加到 v2 上面
+
+2023 0630
+卡轨道 按照 C-T 拐点 128.65~129.05 则会剩下 82.4%（原来97%）
+启用对于 C_DIVISION_CHOSEN_MIN 5 的改动
+
+采取gt散点筛选 条件使得结果变好！！
+! (Z<=8&&A<=13) gt+0.003 --- chi_n = 1.1
+! (Z<=8&&A<=15)    chi_n = 1.1
+
+2023 0705
+为 mass v2 加上 显示存储 each mvqC 的功能 --- 算一下当前的V2 看看散点图 作为 未来对比前置
+
+！！！！ 2023 0706 从此更改原来chi_n 计算中 除以（N-1） 为 除以N
+20230707周五晚上 基本实现加入err gtC chi_n 十分接近1
+20230712 WED做质量结果汇报PPT
+20230713 THU 晚上 服务器跑数据FRUN2B --  服务器半夜蓝屏中断
+20230714 FRI. 从服务器上拷贝下来Si23 SET1 从 1019-1023 至此本地保有全部3个SET的.h5数据
+晚上21点获得SET3 revall （2天每天2分，共4个），开始在本地跑FRUN2B - SET2 23Si 从1019到1023
+1019 23 单独1个小时
+1020-1023 24h四分
+
+20230717
+开始处理： set2 all/part1 ,  set1, set3
+发现： set1 23Si 陈祖毅原来的Fortran限制了周期最大到660ns，则共53000个左右离子，但是一旦放开周期上限到680ns，多出了很多，共94236个
+0717晚 直接得到粗糙鉴定结果， 大扫描
+20230718
+晚上 完成了对于Fortran_to_ROOT 离子鉴别程序的兼容性修改，实现了 h_T,gr_T_epsilon两张鉴别图的自动标记，已经输出筛选前后的分阶段展示
+
+20230719 初步 截止23Si 的结果， 两个part chi_N在 1.4/3 左右， 注意part2后面 周期突变再次分成了 A B， 结果版本控制 选定：result #4 #6
+晚上进入到 SET3-的分析 离子鉴别 
+！！！ 把SET3 的IonIdentify 原来的Binary 分配区间变成遍历法，从而使得缝隙中的离子不会被就近安排到区间里面去。
+
+0725 已经得到3个SET所有质量数据，暂缓继续优化，搭建质量展示的流程程序
+-------------高温假 0728---0806 ------------
+0808  完成 汇报PPT， 两部分：方法+所有结果展示
+0808 晚 按照22Si 最佳结果result#21 进行L  ddT 大扫描 以及 最佳线扫描------ 0809中午 发现 326 次loop后报错停止-- 大概 L 扫描 5 个0.001
+0809 扫描 到 内存占用4个G 停止 415次loop
+--- 判定一次扫描最多 400 loop --- 启用 parallel 复制代码 并行计算
+
+0810 修改PPT, v3质量误差算法
+【】1、画图格式更加正规
+【】2、V3 误差算法
+【】3、误差曲线，适用于低计数核
+
+追加 mvqC 改为 dm_C
+
+0811 
+！！！！！！更改认核标准，对于周期无法分辨且纵轴效率不能分开的，都不作为参考核，通过得到质量后的谱进行分辨
+
+3份程序 对比！！ 改动部分
+Show_C_Division_n_chosen_ON  MassUnknow-IsRef
+22Si 的代码： ions_unknown.Mvq -> ions_unknown.Mvq_cal  
+ionspecies[i].stdDeviation/sqrt(ionspecies[i].N_unknown-1)
+在ionspecies中 加入 gamma 的统计：
+
+0814 Mon. 添加 gr_dmC 
+【】//// 4、添加 h_mvq
+【】////5 ## ZYH指示： 按照YY ppt 标准流程 ，添加图展示 gtC 可以规避磁场晃动
+【v】/////6 pdf latex mass table
+
+
+0821  完成PPT修改版： 1、 等时性 中心 V型曲线 
+2、L  ddt 二维曲面 和 三维空间中的散点最佳曲线
+
+0822 ZYH 汇报：
+1、 sigmaT 处理 -- ZM 论文某版的方法
+2、验证 V3误差算法
+
+0831
+Tfix 修正后的图
+！！！ 发现 Fortran_ROOT有Bug： 峰的计数只取了区间内第一个峰，对于离散的小峰会出现小峰替代总计数 ---- 于0906晚上修复 对于SET1 SET3 已修复， SET2 没有变化
+
+0901-0905 为ZYH 推导 NP剩余相互作用中库仑能贡献项--8点公式 得到了最终很间接的近似形式：
+#Delta#delta Ec = 4AveT/( 9*(Ave A)^(4/3) )
+
+0908 ZYH ：继续做Tfix
+0911 Mon. 明确继续做Tfix  改进PPT： 1、周期效率图 marker size改小
+2、 质量刻度目标： 22Si 计数18 ，已知核中同样计数量级的能不能定准以此来验证
+3、 22Al 偏离    27S计数太少，忽略
++1 (785) 253 35 30 
+
+0921 XYM处理 SET3-28S时认为 10C 20Mg 需要在DN2找串时单独处理，将容忍度由220ps缩到110ps
+s
+0922 在22Si 的 identity result 输出时加上 residue_stdave_TOF2 /TOF1   IdentifyResult_20230922_RUN3-B-FORM_RUN2_PART2
+res_tof和dm影响不大 结果图存在结果保存PPT
+
+1007 国庆节后
+继续在Fortran前端尝试处理SET3 20Mg10C问题
+和Y.Y. 对照发现parameter.rd参数不一致，17.寻找序列最后一个信号的时间 /us// 原来是380 我用了100 导致放宽串的持续圈数，更多圈数少的信号串
+FRUN2D TEST 220 380 跑完后发现 只要TOF2 够 500多圈就行 会有 TOF1 不够500圈 TOF2 够500圈的情况
+!!! FRUN2E - 20231008 有问题，parameter.rd还是100 没有改成380 1008晚的数据结果是在这种错误设置下进行的 ！
+--- 已回到基准FRUN设置  基本解决110ps 异常影响其它核的问题
+
+1019 开始回到误差分析上
+仍需解决3个问题：  
+1、 ERR ANA
+2、 average error/ scattering error  ---- scattering error-- V4
+3、 independence   ---- V3
+1020 固定简化的v2误差输出 后续使用EXCEL统计
+
+1026 修改整理原来的 ionspecies.gr_mvqC 和 .grerr_mvqC_v2 整合到一个 grerr_mvqC
+!!! 统一 ionspecies.mvq 应当只有一个， 不存在同时多版本， 明确在一遍程序中应当只有一种质量版本
+！！！！ 重整程序设计结构--- 一遍程序只有一个版本的质量 用全局 MASS_VER来控制
+！！！！ 质量结果的合并使用后端程序 MASSANA
+ions_unknown 作为临时离子 有多种版本 mass： M_cal_v2...
+
+1107 从张敏师兄zm 取得一套 58Ni 1级（.h5处理后）数据 .log文件和配套的误差矩阵 .root
+
+1108  修改TVMass 58Ni ，重整输入， 将当前最新版本的TVMass22Si直接复制过去
+
+1112 在PPT里面记录了输入项转换，注意到dA0 dA1 是down up 做差，涉及到协方差相关线性运算
+！！！！！！！ 发现张敏给的原始数据 56294 行  中有错误的A，Z =-1000  ---- 删掉几行之后 命名为v2 ----- 但是v2 没有 turn_last_up 等信息！
+1113 删除了几行A Z异常的，但是质量结果仍然异常
+1114     注意！！ 发现到了 ANACSR中A系数是对应的中间圈数不为0，需要计算中间圈数 = (turn_first_down+turn_last_down)/2 
+           存在诸多问题， 还是应该经过 gtCalculator 处理一遍
+1115 对于2017 58Ni 原始数据 开始 使用 FRUN2E1009 进行处理
+1119  对 1228 1229 两天 采用24h4分 FRUN2E1 跑了数据
+1120 在DELL 上开始按小时 跑 1230 1231
+
+【 】!!!!! TVMASS 58Ni 新增了 readin check 内容！ 
+1204 得到了58Ni MASSv2 的误差 卡方0.5 误差棒过大
+1208 修改 MASSv4 58Ni
+
+1211 加入全局Tz 判断功能 36Ar 58Ni 同步更新Show_Mass函数，整合了分Tz颜色显示质量结果的功能
+1212 尝试按照ZM论文重新选取更少的参考核
+        在Calculate_Mass_with_err_58Ni 中加入 v2b的控制项--- Calculate_iont_Mass_v2_58Ni（ 直接传入 use_weighted_On = MASS_VER_v2b_ON）
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+20240626   处理 SET-3 26P
+
+
+TVMASS set3 新增
+（1）更改 筛选 参考核 IsRef 的标准 ，加入计数N  的判断， 但是由于原来的代码位置处于 ionspecies.Record 之前，还没有 N计数， 则在Record 之后再设置一遍去掉计数不够的IsRef
+
+（2） 在 //===================== determine ions.C_region ===
+把原来 单离子循环中进行 ionspecies[ions[i].Species].gtC_CHOSEN = true; 的筛选分离出来， 在前面加上种类循环 进行 gtC筛选的设置
+（3） bool DM_FILTER ;//20240624
+(4 ) IsRef_MIN_N 
+(5 )   bool OUTFILE_v2err_gtC_ON
+(6) outfile_logs 加入两处输出 ： gtC_chosen.  IsREF
+(7)  OUTPUT_IonSpeciesInfo_36Ar_inloop.txt --- OUTPUT_IonSpeciesInfo_36Ar_inloop_loopOFF.txt  
+      修改 种类 函数 void PrintInfo(ofstream& outfile) 
+     在 folder 中也保存一份
+    修改执行 的 位置到确定所有 gtC_CHOSEN 之后
+（8）搜索定位 //20240702
+	增加 ionspecies[i].gr_gtC_own,  ionspecies[i].gr_gtC_own_u,  ionspecies[i].gr_gtC_own_d
+        Grerr_sigma_to_gr(ionspecies[i].grerr_avegtC,ionspecies[i].gr_gtC_own_u,1);
+        Grerr_sigma_to_gr(ionspecies[i].grerr_avegtC,ionspecies[i].gr_gtC_own_d,1);
+（9）
+#define INJECTION_MAX 5000 
+INJ_SKIP 
+
+(10)  //20240709
+TGraphErrors_to_outfile;
+(11)   删掉 L_up ddt_up
+(12) ionspecies 统计各项内容-- 修改原来的 if(c_each_ionspecies_ON)   
+     !!! 增加 ionspecies 成员变量 Tmin Tmax....
+(13) SKIP_IONS_UNKNOWN_COUNT
+(14) outfile_each_mass_data_ON      
+     !!!增加ionspecies 成员变量 ofstream outfile_mass
+(15) GT_SHIFT_Left GT_SHIFT_Right 
+(16) lyfDrawingFormat.h 中新增 Draw_one_TGraph_yaxis_range
+(17) gt_with_err 加入直方图统计
+（18） gtC step 每个阶段的 gr h1 h2 
+。。。。。 添加了很多 ，以后以这个SET-3为主体
+///////////////////////////////////////////////////////////////////////////////////////
+SET3 FORTRAN - TO - ROOT 新增
+（1） ReadIn_check_xym_analysis_ON 以及Do 函数
+（2） FILEPATH 
+（3）outfile_logs
+
+
+
+
+20240704 分3 段后 发现一个问题： subregion 的划分， 最小区间计数 C_DIVISION_CHOSEN_MIN  对于输入文件的不同数据量 必须人为指定， 丧失了自动化
+
+20240718 OUTPUT_MASSRESULT 质量txt更改输出格式
+   命名为 m_s_v2024_loopi
+20240815 flag / Tmin Tmax
+
+//-------------- 20240902 加入 直方图拟合 方法， 基于 massver1 等权结果
+    由此开展 MASS_VER 大重整
+      1. 原来预留的 v2误差 和 v3 直方图 相互交换， 由此实现v1v2 都是等权， 只要 >2 都是误差加权， 形成单调划分 无误差棒和有误差棒
+      2. 将v3 （原来的v2 误差） 整合进 VE （用全大写 标明是多种合并的）。也就是所有带误差棒的结果都应该最后汇总到一个变量后缀 _VE ,然后统一进行 average/scatter 的比较
+         因此 要经过average/scatter 的比较后才能得到 ionspecies[ts].Mass_cal_err_VE
+	原来用的 ionspecies[ts].Mass_cal_err_VE 实际上是 average uncertainty 
+	因此设立前置的 ionspecies[ts].Mass_cal_err_VE_ave 和 ionspecies[ts].Mass_cal_err_VE_sca,  
+	 .Mass_cal_err_VE_ave 替换原来的 Mass_cal_err_VE / 新增计算  ionspecies[ts].Mass_cal_err_VE_sca, (原来程序里的Mass_cal_err_scatter 名字替换为Mass_cal_err_VE_sca)
+	比较之后得到  ionspecies[ts].Mass_cal_err_VE = MIN { ionspecies[ts].Mass_cal_err_VE_ave ， ionspecies[ts].Mass_cal_err_VE_sca   }
+      3. Show_mass_result() 重整  opt【3】 只有三个： v1 v2 VE . 
+	一次运行的程序里只存在3个版本的质量：  v1 ， v2 ， VE 。 这个变量设置的原则将贯彻始终！
+
+//------------- 2024 0906   利用 h1->Reset()  gr->RemovePoint()  进行循环重置， 
+     循环外定义，new， 循环内重置，重复利用，避免循环new占据空间，避免手动delete 
+
+//-------------- 20240908 MASS VER 2 直方图 分 bin 问题：  采用 Freedmann Diaconis rule 确定 bin width， 需要先求得 IQR(interquartile range)
+	双高斯拟合 得到 14O 和 21Mg 两个峰中心的拟合值 用 ionspecies[i].h_m_Gauss_fit_opt=2 控制
+	正常单高斯拟合 ionspecies[i].h_m_Gauss_fit_opt=1 
+         	计数过少的无法拟合 ionspecies[i].h_m_Gauss_fit_opt =0 之后采用 等时性曲线方法得到等效质量误差
+！！！！手动在 ionspecies 中 添加 21Mg
+    h_mvq的拟合，只在双高斯拟合的情况下做。 其它单高斯峰的情况直接用 h_dm
+
+
+//////////////// 0914 开始整合 GtCMASS
+0916 整合： 读入NUBASE2020 完整数据， 自动寻找 IAS Isome  
+！！！ERROR!!!    0917 发现 Calculate_gt_from_a_with_err() 中 误差传递 cov_ij 前面偏导数 Di Dj 少写了 2 倍
+0918 整改循环，恢复L ddt循环运行
+    内存节省原则： 在循环外 new TGraph TH1 每次循环 重置 利用 h1->Reset()  gr->RemovePoint()  进行循环重置， 
+---- gr->SetPoint(gr->GetN(),j,i); 直接使用 GetN（） 不用专门定义一个 int gr_n 了！
+    
+    对于必须在循环里面New 的情况 --- 比如 h1 必须根据每次循环的计算动态确定 分 Bin ，则只能在循环里面new
+        如果是 ！LOOP_ON new 则不用 delete 因为只运行一次，留着看图
+        如果在LOOP_ON 的时候去new， 那么在循环内画图要注意使用 DrawClone() 然后在循环一次结束的时候 delete
+    对于包裹在if(!LOOP_ON) {} 里面的都不用delete 反正只会new 一次，而且要留着 在TCanvas 上面Draw()
+0927 c7 --- 画 h_T_ALL 所有核的原始周期谱
+
+1006 重整 Show_mvqC_each_ON
+1006 58Ni 双高斯拟合 在Function.h 加入函数 Do_2gaus()
+
+1017 gtC_chosen_sigma[] 更名为 gtC_chosen_err[]
+
+!!! 处理 C_region = h1_E ->FindBin() 的对齐问题：  h1_E ->FindBin() 返回的Bin number 从1 开始到N, 超出上下界则为 0， N+1
+由于 gtC[subregion_n] 的下标最大是 subregion_n -1 , 则 h1_E ->FindBin() 返回的 最后一个BIN number 会数组越界， 
+    且超出直方图下界的Bin number=0, gtC[0]就全是对应于 超出直方图下界的
+    以往是 if(C_region<=0||C_region>=N)continue; 这样第一个Bin 对应于gtC[1], 最后一个bin 被丢弃了
+----> 现在改成 bin number -- 左移 和 数组下标对齐：
+C_region = h1_E->FindBin(ions.C)-1; 都减1 
+gtC[C_region] 从0~n-1 ===== 对应于 bin 从 1~n
+---------------- 规范操作： 
+                C_region = h1->FindBin(ions[i].C)-1;
+                if(C_region>s_n-1||C_region<0){continue;} 超出有效gtC范围的都扔掉
+----------- 相应的 所有h->GetBinCenter(i+1) 必须i+1 对应于 gtC[i]
+
+
+2024 1028: Cmin Cmax 一开始是数据中所有离子 C 的上下界，后来又为了定义 h_locate 进行了二次赋值：
+Cmin = h1_STEP1_EL;
+Cmax = h1_STEP1_ER;
+
+----- 为了避免Cmin Cmax 的意义改变，使用新的变量
+double subregion_Cmin = h1_STEP1_EL;
+double subregion_Cmax = h1_STEP1_ER;
+
+--- Draw On 部分
+增加和 ISO相关：  dmvq_ISO
+---- IONSpecies 成员变量加入 和time 相关的
+
+
+20241114
+修改 IONSpecies成员函数 NewGtArrays ->Reset
+修改 filliongt
+
+--- 原来：  if(ions[i].C_region==subregion_n){count_out_of_h1E_bin_R++;ions[i].C_region = subregion_n;} 
+改为删掉后面的 ions[i].C_region = subregion_n; 这些应该是右边超出subregion 了
+
+修改原来成员函数内部构建 own gtC 
+增添成员变量 .Has_own_avegtC
+改为外部函数 BuildAvegtCCurve_each()
+
+20241121 在 Ions ions_unknown 加入 gammat_err 的赋值：
+在 void operator=(const ION& ion_ref)
+gammat_err = ion_ref.gammat_err;
+
+20241123 在 Show_Mass_Result()
+//新增 根据 参考核 目标核 其它核 3分类的颜色显示 由于ROOT 一个TGraph 里面所有点只能是一种颜色，只能把不同颜色的点分别加到不同TGraph
+    //-------------------- grerr 3 parts: r=reference t=targets(mass unknown) o=others(mass known but not ref)
+
+202141202 调整 cancas_on 编号
+删除 Generate_k_mvqC_T_On   =    0  ;  // 画出每种核 mvq-C 散点图 并拟合得到此种核 mvq-C 的斜率 
+该功能被 
+bool Show_mvqC_each_ON      =    0;   // 显示每一种类离子的 mvq-C v1 散点图 ,各自一个canvas ,存储图片
+int  Show_mvqC_each_MIN     =    100;  // 一种核的计数要大于等于这个值，才会有窗口显示，对mvq-C 散点图进行线性拟合
+    bool Do_Generate_k_mvqC_ON   =1;  // 对于每种核的mvqC散点图做直线拟合 得到各种核的斜率
+所替代
+
+20250121 整合 L.JH SET1 数据集 
+ 当前版本 v0.94 可以处理三套数据： 2017_58Ni, 2021_36Ar_SET1 , 2021_36Ar_SET3
+目标：整合进 SET2 ， 并完成误差加权后可以 成为 v1.0
+
+2025 0210 if(THIS_EXP=="2017_58Ni"&&Do_gtC_with_time_ON) 
+//----------- gtC_inj- ISF  在这里进行了 grerr_avegtC_inj_1  到 ISF_inj1 的转换，必须保证有Do_gtC_with_time_ON 打开才能先生成 grerr_avegtC_inj_1
+
+
+2025 0228 整合 SET2
+
+#define gtC_ERR_upper_bound 0.02        //step1 筛选γt散点， γt误差上限 
+    改为 double 随实验动态设置 THIS_EXP
+
+bool Do_outfile_inj_ions   = 1;  // 将每次注入有多少离子输出到文件
+
+2025 0301
+ions[i].PrintInfo_complete(ofstream& outfile) 加入更多信息
+
+添加存储直方图等root对象的TFile ///////////////////=========== root file ====================///////////////
+
+2025 0305 在Tfix 和反算m0 时，使用固定Bp C的方法，则只能看std, 引入中间存储的vector
